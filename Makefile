@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall
+CFLAGS=-Wall -Iinc/
 
 TEST_SRCS = $(wildcard test/*.cc)
 TEST_PROGS = $(patsubst %.cc,%,$(TEST_SRCS))
