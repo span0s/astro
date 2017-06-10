@@ -122,21 +122,23 @@ class Timecode {
         Timecode operator +(double aa) {
             return Timecode(this->whole, this->fract + aa);
         }
+
         Timecode operator -(double aa) {
             return Timecode(this->whole, this->fract - aa);
+        }
+
+        double operator -(const Timecode& tc) {
+            return (double)(whole - tc.whole) + (fract - tc.fract);
         }
 
         void operator +=(double aa) {
             this->fract += aa;
             normalize();
         }
+
         void operator -=(double aa) {
             this->fract -= aa;
             normalize();
-        }
-
-        double operator -(const Timecode& tc) {
-            return (double)(whole - tc.whole) + (fract - tc.fract);
         }
 
         friend bool operator <(Timecode& aa, Timecode& bb) {
@@ -145,6 +147,10 @@ class Timecode {
 
         friend bool operator >(Timecode& aa, Timecode& bb) {
             return (aa - bb) > 0;
+        }
+
+        friend bool operator ==(const Timecode& aa, Timecode& bb) {
+            return (aa.whole == bb.whole) && (aa.fract == bb.fract);
         }
 
     private:
