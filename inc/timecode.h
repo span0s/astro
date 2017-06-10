@@ -66,13 +66,13 @@ class Timecode {
         void normalize() {
             double lower = floor(fract);
             whole += (int64_t)lower;
-            fract -= lower;
+            fract -= (int64_t)lower;
         }
 
         DateTime getDt(double places = -1) {
             normalize();
             int before_whole = whole;
-            int before_fract = fract;
+            double before_fract = fract;
 
             if (places >= 0) {
             double scale = pow(10, places);
@@ -119,11 +119,32 @@ class Timecode {
         }
 
     public:
-        Timecode operator+(double aa) {
+        Timecode operator +(double aa) {
             return Timecode(this->whole, this->fract + aa);
         }
-        Timecode operator-(double aa) {
+        Timecode operator -(double aa) {
             return Timecode(this->whole, this->fract - aa);
+        }
+
+        void operator +=(double aa) {
+            this->fract += aa;
+            normalize();
+        }
+        void operator -=(double aa) {
+            this->fract -= aa;
+            normalize();
+        }
+
+        double operator -(const Timecode& tc) {
+            return (double)(whole - tc.whole) + (fract - tc.fract);
+        }
+
+        friend bool operator <(Timecode& aa, Timecode& bb) {
+            return (aa - bb) < 0;
+        }
+
+        friend bool operator >(Timecode& aa, Timecode& bb) {
+            return (aa - bb) > 0;
         }
 
     private:
