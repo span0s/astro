@@ -22,7 +22,9 @@ int main(int argc, char *argv[]) {
 
     bool ans0 = tc1 > tc;
     bool ans1 = tc2 < tc;
-    cout << "1 1 1 0 ==: " << ans0 << " " << ans1 << tc == tc << tc1 == tc2endl;
+    bool ans2 = tc == tc;
+    bool ans3 = tc1 == tc2;
+    cout << "1 1 1 0 == " << ans0 << " " << ans1 << " " << ans2 << " " << ans3 << endl;
 
     return 0;
 }
