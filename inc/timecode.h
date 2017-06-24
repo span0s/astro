@@ -1,10 +1,10 @@
-#ifndef ASTRO_TIMECODE_H_
+#ifndef ASTRO_TIMECODE_H
 #define ASTRO_TIMECODE_H
 
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
-#include <string.h>
+#include <string>
 
 struct DateTime{
     int32_t year, month, day;
@@ -15,9 +15,13 @@ struct DateTime{
 // ref: github/xscott/xmtools
 class Timecode {
     public:
+        Timecode() {
+            whole_ = 0;
+            fract_ = 0;
+        }
         Timecode(int whole, double fract) {
-            this->whole = whole;
-            this->fract = fract;
+            whole_ = whole;
+            fract_ = fract;
             normalize();
         }
         Timecode(int year, int month, int day) {
@@ -48,96 +52,96 @@ class Timecode {
                 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
             };
 
-            whole = (year - 1950) * 365;  // add days in first
-            whole += (year - 1949)/4;     // leap days since epoch
-            whole += moffset[month - 1];  // days in current year
+            whole_ = (year - 1950) * 365;  // add days in first
+            whole_ += (year - 1949)/4;     // leap days since epoch
+            whole_ += moffset[month - 1];  // days in current year
 
             if ((year % 4 == 0) && (month > 2)) {
-                whole++;                  // possible current leap day
+                whole_++;                  // possible current leap day
             }
 
-            whole += day-1;   whole *= 24; // day of the month, now at curent day
-            whole += hour;    whole *= 60; // hours
-            whole += minutes; whole *= 60; // minutes
-            fract = secs;
+            whole_ += day-1;   whole_ *= 24; // day of the month, now at curent day
+            whole_ += hour;    whole_ *= 60; // hours
+            whole_ += minutes; whole_ *= 60; // minutes
+            fract_ = secs;
             normalize();
         }
 
         void normalize() {
-            double lower = floor(fract);
-            whole += (int64_t)lower;
-            fract -= (int64_t)lower;
+            double lower = floor(fract_);
+            whole_ += (int64_t)lower;
+            fract_ -= (int64_t)lower;
         }
 
         DateTime getDt(double places = -1) {
             normalize();
-            int before_whole = whole;
-            double before_fract = fract;
+            int before_whole = whole_;
+            double before_fract = fract_;
 
             if (places >= 0) {
             double scale = pow(10, places);
-                fract = round(fract*scale)/scale;
-                if (fract == 1.0) {
-                    whole += 1;
-                    fract = 0.0;
+                fract_ = round(fract_*scale)/scale;
+                if (fract_ == 1.0) {
+                    whole_ += 1;
+                    fract_ = 0.0;
                 }
             }
 
             static const int32_t mdays[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-            int32_t sec  = whole % 60; whole /= 60;
-            int32_t min  = whole % 60; whole /= 60;
-            int32_t hour = whole % 24; whole /= 24;
+            int32_t sec  = whole_ % 60; whole_ /= 60;
+            int32_t min  = whole_ % 60; whole_ /= 60;
+            int32_t hour = whole_ % 24; whole_ /= 24;
 
             // whole is now days since 1950, switch to 1948 to make math easier
-            whole += 365+366;
-            int32_t year = 1948 + whole/(365*4+1)*4; whole %= (365*4+1);
+            whole_ += 365+366;
+            int32_t year = 1948 + whole_/(365*4+1)*4; whole_ %= (365*4+1);
 
             // handle remainder of years
             int32_t curleap=1;
-            if (whole > 365) {
-                year += 1;         whole -= 366;
-                year += whole/365; whole %= 365;
+            if (whole_ > 365) {
+                year += 1;         whole_ -= 366;
+                year += whole_/365; whole_ %= 365;
                 curleap=0;
             }
 
             size_t ii;
             for (ii = 0; ii < 12; ii++) {
                 int32_t days = mdays[ii] + (((ii == 1) && curleap) ? 1 : 0);
-                if (whole < days) {
+                if (whole_ < days) {
                     break;
                 }
-                whole -= days;
+                whole_ -= days;
             }
        
-            int32_t day   = whole+1;
+            int32_t day   = whole_+1;
             int32_t month = ii + 1;
 
-            whole = before_whole;
-            fract = before_fract;
-            return (DateTime){year, month, day, hour, min, sec + fract};
+            whole_ = before_whole;
+            fract_ = before_fract;
+            return (DateTime){year, month, day, hour, min, sec + fract_};
         }
 
     public:
         Timecode operator +(double aa) {
-            return Timecode(this->whole, this->fract + aa);
+            return Timecode(whole_, fract_ + aa);
         }
 
         Timecode operator -(double aa) {
-            return Timecode(this->whole, this->fract - aa);
+            return Timecode(whole_, fract_ - aa);
         }
 
         double operator -(const Timecode& tc) {
-            return (double)(whole - tc.whole) + (fract - tc.fract);
+            return (double)(whole_ - tc.whole_) + (fract_ - tc.fract_);
         }
 
         void operator +=(double aa) {
-            this->fract += aa;
+            this->fract_ += aa;
             normalize();
         }
 
         void operator -=(double aa) {
-            this->fract -= aa;
+            this->fract_ -= aa;
             normalize();
         }
 
@@ -150,12 +154,12 @@ class Timecode {
         }
 
         friend bool operator ==(const Timecode& aa, Timecode& bb) {
-            return (aa.whole == bb.whole) && (aa.fract == bb.fract);
+            return (aa.whole_ == bb.whole_) && (aa.fract_ == bb.fract_);
         }
 
     private:
-        int whole;
-        double fract;
+        int whole_;
+        double fract_;
 };
 
 #endif
