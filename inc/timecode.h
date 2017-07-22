@@ -30,6 +30,9 @@ class Timecode {
         Timecode(int year, int month, int day, int hour, int minutes, double secs) {
             init(year, month, day, hour, minutes, secs);
         }   
+        Timecode(DateTime dt) {
+            init(dt.year, dt.month, dt.day, dt.hour, dt.min, dt.secs);
+        }
 
         std::string getStr() {
             DateTime dt = getDt();
