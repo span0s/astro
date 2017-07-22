@@ -37,12 +37,21 @@ class StateVec {
         Vec3 pos_, vel_, acc_;
 };
 
+enum CoordSystem {
+    FIXED = 0,
+    INERTIAL,
+    TEME
+};
+
 class Ephemeris {
     public:
         Ephemeris(){}
 
     public:
         std::vector<StateVec> states_;
+
+        CoordSystem csystem_;
+        Timecode csystemEpoch_;
 };
 
 #endif

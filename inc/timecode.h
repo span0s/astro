@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <string>
+#include <vector>
 
 struct DateTime{
     int32_t year, month, day;
@@ -40,6 +41,20 @@ class Timecode {
             sprintf(
                 buffer, "%04d-%02d-%02d::%02d:%02d:%09.6f",
                 dt.year, dt.month, dt.day, dt.hour, dt.min, dt.secs
+            );
+
+            std::string str = buffer;
+                
+            return str;
+        }
+
+        std::string getStrAGI() {
+            DateTime dt = getDt();
+            char buffer[32];
+            sprintf(
+                buffer, "%02d %s %04d %02d:%02d:%09.6f",
+                dt.day, monthStrs_[dt.month-1], dt.year,
+                dt.hour, dt.min, dt.secs
             );
 
             std::string str = buffer;
@@ -166,9 +181,16 @@ class Timecode {
             return (aa.whole_ == bb.whole_) && (aa.fract_ == bb.fract_);
         }
 
+        static const char* const monthStrs_[];
+
     private:
         int whole_;
         double fract_;
+};
+
+const char* const Timecode::monthStrs_[] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "June",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
 #endif

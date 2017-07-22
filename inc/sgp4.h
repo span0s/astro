@@ -54,6 +54,8 @@ class TLE{
 // Create ephem from tle
 Ephemeris ephemFromTLE(TLE tle, Timecode tc0, Timecode tc1, double dt) {
     Ephemeris ephem;
+    ephem.csystem_ = TEME;
+    ephem.csystemEpoch_ = tle.epoch_;
 
     int count = 0;
     Timecode tc = tc0;
