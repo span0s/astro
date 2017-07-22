@@ -55,5 +55,10 @@ int main(int argc, char *argv[]) {
     StateVec sv = tle.getState(tle.epoch_ + 1);
     cout << sv.getStr() << endl;
 
+    Ephemeris ephem = ephemFromTLE(tle, tle.epoch_, tle.epoch_ + 86400, 60);
+    for (int ii = 0; ii < (int)ephem.states_.size(); ii++) {
+        cout << ephem.states_[ii].getStr() << endl;
+    }
+
     return 0;
 }

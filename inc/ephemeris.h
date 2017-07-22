@@ -39,9 +39,9 @@ class StateVec {
 
 class Ephemeris {
     public:
-        Ephemeris();
+        Ephemeris(){}
 
-    private:
+    public:
         std::vector<StateVec> states_;
 };
 

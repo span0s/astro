@@ -151,9 +151,15 @@ class Timecode {
         friend bool operator <(Timecode& aa, Timecode& bb) {
             return (aa - bb) < 0;
         }
+        friend bool operator <=(Timecode& aa, Timecode& bb) {
+            return (aa - bb) <= 0;
+        }
 
         friend bool operator >(Timecode& aa, Timecode& bb) {
             return (aa - bb) > 0;
+        }
+        friend bool operator >=(Timecode& aa, Timecode& bb) {
+            return (aa - bb) >= 0;
         }
 
         friend bool operator ==(const Timecode& aa, Timecode& bb) {
