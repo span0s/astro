@@ -10,6 +10,8 @@ int main(int argc, char *argv[]) {
 
     cout << tmp.getStr() << endl;
     cout << tmp2.getStr() << endl;
+    tmp2[0] = 10;
+    cout << tmp2[0] << " " << tmp2[1] << " " << tmp2[2] << endl;
     cout << tmp3.getStr() << endl;
 
     cout << (tmp2 + tmp3).getStr() << endl;

@@ -43,6 +43,22 @@ class Vec3 {
         }
 
     public:
+        double operator[](int idx) const {
+            switch(idx) {
+                case 0: return x_;
+                case 1: return y_;
+                case 2: return z_;
+            }
+            throw std::string("Vec3 index outside of bounds");
+        }
+        double& operator[](int idx) {
+            switch(idx) {
+                case 0: return x_;
+                case 1: return y_;
+                case 2: return z_;
+            }
+            throw std::string("Vec3 index outside of bounds");
+        }
         Vec3 operator+(const Vec3 aa) {
             return Vec3(x_ + aa.x_, y_ + aa.y_, z_ + aa.z_);
         }
