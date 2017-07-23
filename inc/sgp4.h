@@ -39,8 +39,8 @@ class TLE{
             double pos[3], vel[3];
             Vallado::sgp4(satrec_, (tc - epoch_)/60.0, pos, vel);
             return StateVec(
-                tc, Vec3(pos[0], pos[1], pos[2])*1000,
-                Vec3(vel[0], vel[1], vel[2])*1000
+                tc, Vec3(pos[0], pos[1], pos[2])*1000.0,
+                Vec3(vel[0], vel[1], vel[2])*1000.0
             );
         }
 
