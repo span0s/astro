@@ -178,6 +178,47 @@ class Ephemeris {
             return ephem;
         }
 
+        std::vector<StateVec> ephemRIC(Ephemeris& ephem) {
+            Timecode tc0 = states_.front().tc_;
+            Timecode tc1 = states_.back().tc_;
+            if (ephem.states_.front().tc_ > tc0) tc0 = ephem.states_.front().tc_;
+            if (ephem.states_.back().tc_ < tc1) tc1 = ephem.states_.back().tc_;
+
+            std::vector<StateVec> ans;
+            std::set<Timecode> times;
+            for (int ii = 0; ii < (int)states_.size(); ii++) {
+                times.insert(states_[ii].tc_);
+
+                StateVec other = ephem.getSV(states_[ii].tc_);
+
+                Mat3 mat = states_[ii].ricMat();
+                Vec3 rdelta = other.pos_ - states_[ii].pos_;
+                Vec3 vdelta = other.vel_ - states_[ii].vel_;
+
+                Vec r_ric = mat*rdelta;
+                Vec v_ric = mat*vdelta;
+                StateVec tmp(states_[ii].tc_, r_ric, v_ric);
+            }
+
+            for (int ii = 0; ii < (int)ephem.states_.size(); ii++) {
+                if (times.count(ephem.states_[ii].tc_) == 1) continue;
+                
+                times.insert(ephem.states_[ii].tc_);
+
+                StateVec other = getSV(ephem.states_[ii].tc_);
+
+                Mat3 mat = other.ricMat();
+                Vec3 rdelta = ephem.states_[ii].pos_ - other.pos_;
+                Vec3 vdelta = ephem.states_[ii].vel_ - other.vel_;
+
+                Vec r_ric = mat*rdelta;
+                Vec v_ric = mat*vdelta;
+                StateVec tmp(ephem.states_[ii].tc_, r_ric, v_ric);
+            }
+
+            return;
+        }
+
     public:
         std::vector<StateVec> states_;
         bool accValid_;
