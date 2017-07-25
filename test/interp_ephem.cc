@@ -2,6 +2,7 @@
 using namespace std;
 
 #include "sgp4.h"
+#include "io_ephemeris.h"
 
 int main(int argc, char* args[]) {
 
@@ -11,5 +12,8 @@ int main(int argc, char* args[]) {
     Ephemeris ephem0 = ephemFromTLE(tle, tle.epoch_, tle.epoch_ + 86400, 60);
 
     Ephemeris ephem1 = ephem0.interpToStep(10);
+
+    writeEphemToAGI("tmp.e", ephem0);
+    writeEphemToAGI("tmp_10.e", ephem1);
     return 0;
 }

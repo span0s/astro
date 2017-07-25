@@ -9,6 +9,13 @@ class StateVec {
     public:
         StateVec(){}
 
+        StateVec(const StateVec& sv) {
+            tc_ = sv.tc_;
+            pos_ = sv.pos_;
+            vel_ = sv.vel_;
+            acc_ = sv.acc_;
+        }
+
         StateVec(Timecode tc, Vec3 pos) {
             tc_ = tc;
             pos_ = pos;
@@ -42,7 +49,7 @@ class StateVec {
             } else if (idx >= 6 && idx <= 8) {
                 return acc_[idx-6];
             }
-            throw std::string("StateVec index outside of bounds");
+            throw "StateVec index outside of bounds";
         }
         double& operator [](int idx) {
             if (idx >=0 && idx <= 2) {
@@ -52,7 +59,7 @@ class StateVec {
             } else if (idx >= 6 && idx <= 8) {
                 return acc_[idx-6];
             }
-            throw std::string("StateVec index outside of bounds");
+            throw "StateVec index outside of bounds";
         }
 
     public:
@@ -69,11 +76,16 @@ enum CoordSystem {
 class Ephemeris {
     public:
         Ephemeris() {
-            accValid = false;    
+            accValid_ = false;    
         }
 
+        /**
+         * Gets the size of each state vec in the ephemeris
+         *
+         * @return The number of elements in each state vec
+         */
         int stateVecSize() {
-            if (accValid) return 9;
+            if (accValid_) return 9;
             return 6;
         }
 
@@ -86,27 +98,35 @@ class Ephemeris {
          * @return The interpolated state at the given time
          */
         StateVec getSV(Timecode tc, int numpts = 4) {
-            if (states_.size() == 0) throw std::string("No ephemeris points to interpolate");
+            if (states_.size() == 0) throw "No ephemeris points to interpolate";
 
             // Find bounding indices
             int idx = 0;
             bool found = false;
             while (idx < (int)states_.size()-1) {
-                if (states_[idx].tc_ < tc && states_[idx].tc_ > tc) {
+                if (states_[idx].tc_ == tc) return states_[idx];
+                if (states_[idx+1].tc_ == tc) return states_[idx+1];
+
+                if (states_[idx].tc_ <= tc && states_[idx+1].tc_ >= tc) {
                     found = true;
                     break;
                 }
                 idx++;
             }
-            if (!found) throw std::string("Requested time outside ephemeris time span");
+            if (!found) throw "Requested time outside ephemeris time span";
 
             // XXX Handle odd number of points better
-            int idx_lo = idx - floor(numpts/2.0);
+            int idx_lo = idx - floor(numpts/2.0) + 1;
             int idx_hi = idx + floor(numpts/2.0);
             if (idx_lo < 0) idx_lo = 0;
             if (idx_hi > (int)states_.size()-1) idx_hi = states_.size()-1;
 
             // XXX Handle edge cases
+            int tmp_numpts = idx_hi - idx_lo + 1;
+            if (tmp_numpts != numpts) {
+                if (idx_lo == 0) idx_hi += numpts - tmp_numpts;
+                if (idx_hi == (int)states_.size()-1) idx_lo -= numpts - tmp_numpts;
+            }
             
             StateVec ans;
             ans.tc_ = tc;
@@ -121,7 +141,7 @@ class Ephemeris {
 
                 ans[ii] = evalInterp(divDiff(fx, xx), xx, tc - states_[0].tc_);
             }
-
+            
             return ans;
         }
 
@@ -136,6 +156,9 @@ class Ephemeris {
          */
         Ephemeris interpToStep(double step, int numpts = 4) {
             Ephemeris ephem;
+            ephem.accValid_ = accValid_;
+            ephem.csystem_ = csystem_;
+            ephem.csystemEpoch_ = csystemEpoch_;
 
             int count = 0;
             Timecode tc0 = states_.front().tc_;
@@ -157,7 +180,7 @@ class Ephemeris {
 
     public:
         std::vector<StateVec> states_;
-        bool accValid;
+        bool accValid_;
 
         CoordSystem csystem_;
         Timecode csystemEpoch_;
