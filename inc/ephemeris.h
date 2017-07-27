@@ -1,6 +1,9 @@
 #ifndef ASTRO_EPHEMERIS_H
 #define ASTRO_EPHEMERIS_H
 
+#include <set>
+#include <algorithm>
+
 #include "timecode.h"
 #include "vecmat3.h"
 #include "interpolate.h"
@@ -41,6 +44,27 @@ class StateVec {
             return strs.str();
         }
 
+        Mat3 ricMat() {
+            Vec3 rHat = pos_.norm();
+            Vec3 hHat = pos_.cross(vel_).norm();
+            Vec3 aHat = hHat.cross(rHat);
+
+            return Mat3(
+                rHat.x_, rHat.y_, rHat.z_,
+                aHat.x_, aHat.y_, aHat.z_,
+                hHat.x_, hHat.y_, hHat.z_
+            );
+        }
+
+        StateVec ricDelta(StateVec other) {
+            if (tc_ != other.tc_) throw "StateVec times must match for RIC";
+
+            Mat3 mat = ricMat();
+            Vec3 r_ric = mat*(other.pos_ - pos_);
+            Vec3 v_ric = mat*(other.vel_ - vel_);
+            return StateVec(tc_, r_ric, v_ric);
+        }
+
         double operator [](int idx) const {
             if (idx >=0 && idx <= 2) {
                 return pos_[idx];
@@ -60,6 +84,10 @@ class StateVec {
                 return acc_[idx-6];
             }
             throw "StateVec index outside of bounds";
+        }
+
+        friend bool operator <(const StateVec& aa, const StateVec& bb) {
+            return aa.tc_ < bb.tc_;
         }
 
     public:
@@ -178,7 +206,7 @@ class Ephemeris {
             return ephem;
         }
 
-        std::vector<StateVec> ephemRIC(Ephemeris& ephem) {
+        std::vector<StateVec> RIC(Ephemeris& ephem) {
             Timecode tc0 = states_.front().tc_;
             Timecode tc1 = states_.back().tc_;
             if (ephem.states_.front().tc_ > tc0) tc0 = ephem.states_.front().tc_;
@@ -188,35 +216,21 @@ class Ephemeris {
             std::set<Timecode> times;
             for (int ii = 0; ii < (int)states_.size(); ii++) {
                 times.insert(states_[ii].tc_);
-
                 StateVec other = ephem.getSV(states_[ii].tc_);
-
-                Mat3 mat = states_[ii].ricMat();
-                Vec3 rdelta = other.pos_ - states_[ii].pos_;
-                Vec3 vdelta = other.vel_ - states_[ii].vel_;
-
-                Vec r_ric = mat*rdelta;
-                Vec v_ric = mat*vdelta;
-                StateVec tmp(states_[ii].tc_, r_ric, v_ric);
+                ans.push_back(states_[ii].ricDelta(other));
             }
 
             for (int ii = 0; ii < (int)ephem.states_.size(); ii++) {
                 if (times.count(ephem.states_[ii].tc_) == 1) continue;
                 
                 times.insert(ephem.states_[ii].tc_);
-
-                StateVec other = getSV(ephem.states_[ii].tc_);
-
-                Mat3 mat = other.ricMat();
-                Vec3 rdelta = ephem.states_[ii].pos_ - other.pos_;
-                Vec3 vdelta = ephem.states_[ii].vel_ - other.vel_;
-
-                Vec r_ric = mat*rdelta;
-                Vec v_ric = mat*vdelta;
-                StateVec tmp(ephem.states_[ii].tc_, r_ric, v_ric);
+                StateVec ref = getSV(ephem.states_[ii].tc_);
+                ans.push_back(ref.ricDelta(ephem.states_[ii]));
             }
 
-            return;
+            std::sort(ans.begin(), ans.end());
+
+            return ans;
         }
 
     public:
