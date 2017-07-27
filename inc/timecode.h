@@ -141,15 +141,15 @@ class Timecode {
         }
 
     public:
-        Timecode operator +(double aa) {
+        Timecode operator +(double aa) const {
             return Timecode(whole_, fract_ + aa);
         }
 
-        Timecode operator -(double aa) {
+        Timecode operator -(double aa) const {
             return Timecode(whole_, fract_ - aa);
         }
 
-        double operator -(const Timecode& tc) {
+        double operator -(const Timecode& tc) const {
             return (double)(whole_ - tc.whole_) + (fract_ - tc.fract_);
         }
 
@@ -163,22 +163,25 @@ class Timecode {
             normalize();
         }
 
-        friend bool operator <(Timecode& aa, Timecode& bb) {
+        friend bool operator <(const Timecode& aa, const Timecode& bb) {
             return (aa - bb) < 0;
         }
-        friend bool operator <=(Timecode& aa, Timecode& bb) {
+        friend bool operator <=(const Timecode& aa, const Timecode& bb) {
             return (aa - bb) <= 0;
         }
 
-        friend bool operator >(Timecode& aa, Timecode& bb) {
+        friend bool operator >(const Timecode& aa, const Timecode& bb) {
             return (aa - bb) > 0;
         }
-        friend bool operator >=(Timecode& aa, Timecode& bb) {
+        friend bool operator >=(const Timecode& aa, const Timecode& bb) {
             return (aa - bb) >= 0;
         }
 
-        friend bool operator ==(const Timecode& aa, Timecode& bb) {
-            return (aa.whole_ == bb.whole_) && (aa.fract_ == bb.fract_);
+        friend bool operator ==(const Timecode& aa, const Timecode& bb) {
+            return fabs(aa - bb) < 1e-12;
+        }
+        friend bool operator !=(const Timecode& aa, const Timecode& bb) {
+            return !(aa == bb);
         }
 
         static const char* const monthStrs_[];
