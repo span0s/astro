@@ -36,6 +36,11 @@ class Vec3 {
             return sqrt(x_*x_ + y_*y_ + z_*z_);
         }
 
+        Vec3 norm() {
+            double mm = mag();
+            return Vec3(x_/mm, y_/mm, z_/mm);
+        }
+
         std::string getStr() {
             std::ostringstream strs;
             strs << "[" << x_ << ", " << y_ << ", " << z_ << "]";
