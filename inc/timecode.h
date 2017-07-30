@@ -2,10 +2,11 @@
 #define ASTRO_TIMECODE_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
-#include <string>
-#include <vector>
+
+#include "string_extra.h"
 
 struct DateTime{
     int32_t year, month, day;
@@ -60,6 +61,34 @@ class Timecode {
             std::string str = buffer;
                 
             return str;
+        }
+
+        static Timecode parseAGI(std::string str) {
+            std::vector<std::string> tmp = strSplit(str, ' ');
+            if (tmp.size() != 4) 
+                throw "Invalid AGI time format";
+
+            int day = atoi(tmp[0].c_str());
+            int year = atoi(tmp[2].c_str());
+            int month = 0;
+            for (int ii = 0; ii < 12; ii++) {
+                if (tmp[1] == monthStrs_[ii]) {
+                    month = ii + 1;
+                    break;
+                }
+            }
+            if (month == 0)
+                throw "Invalid AGI month string";
+
+            std::vector<std::string> time = strSplit(tmp[3], ':');
+            if (time.size() != 3)
+                throw "Invalid AGI time string format";
+
+            int hour = atoi(time[0].c_str());
+            int minute = atoi(time[1].c_str());
+            double sec = atof(time[2].c_str());
+
+            return Timecode(year, month, day, hour, minute, sec);
         }
 
     private:
@@ -192,7 +221,7 @@ class Timecode {
 };
 
 const char* const Timecode::monthStrs_[] = {
-    "Jan", "Feb", "Mar", "Apr", "May", "June",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
