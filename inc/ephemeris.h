@@ -104,6 +104,7 @@ enum CoordSystem {
 class Ephemeris {
     public:
         Ephemeris() {
+            csystem_ = FIXED;
             accValid_ = false;    
         }
 

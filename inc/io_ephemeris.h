@@ -2,6 +2,9 @@
 #define ASTRO_EPHEMERIS_IO_H
 
 #include <stdio.h>
+#include <fstream>
+#include <sstream>
+#include "string_extra.h"
 
 bool writeEphemToAGI(std::string outfile, Ephemeris& ephem) {
     if (ephem.states_.size() == 0) return false;
@@ -41,6 +44,67 @@ bool writeEphemToAGI(std::string outfile, Ephemeris& ephem) {
     fclose(fp);
 
     return true;
+}
+
+Ephemeris readEphemAGI(std::string filename) {
+    Ephemeris ephem;
+
+    std::ifstream infile(filename.c_str());
+
+    bool epochFound = false;
+    bool csystemFound = false;
+    bool csystemEpochFound = false;
+    bool atEphemLines = false;
+    bool foundEnd = false;
+
+    Timecode epoch;
+
+    // Parse line by line
+    std::string line;
+    while (std::getline(infile, line)) {
+        if (!epochFound && line.find("ScenarioEpoch") != std::string::npos) {
+            epochFound = true;
+            std::vector<std::string> tmp = strSplit(line, ' ');
+            if (tmp.size() != 2) {
+                throw "Invalid \"ScenarioEpoch\" line in AGI ephem file";
+            }
+            epoch = Timecode::parseAGI(tmp[1]);
+        }
+        if (!csystemFound && line.find("CoordinateSystem") != std::string::npos) {
+            csystemFound = true;
+            std::vector<std::string> tmp = strSplit(line, ' ' );
+        }
+        if (!csystemEpochFound && line.find("CoordinateSystemEpoch") != std::string::npos) {
+            csystemEpochFound = true;
+        }
+
+        if (line.find("EphemerisTimePosVel") != std::string::npos) {
+            atEphemLines = true;
+        }
+
+        if (line.find("END Ephemeris") != std::string::npos) {
+            foundEnd = true;
+            break;
+        }
+
+        if (atEphemLines) {
+
+        }
+    }
+
+    infile.close();
+
+    // Invalid inputs
+    if (!epochFound)
+        throw "Failed to find \"ScenarioEpoch\" when reading AGI ephemeris file";
+    if (!csystemFound)
+        throw "Failed to find \"CoordinateSystem\" when reading AGI ephemeris file";
+    if (ephem.csystem_ == TEME && !csystemEpochFound)
+        throw "Failed to find \"CoordinateSystemEpoch\" for frame that needs it";
+    if (!foundEnd)
+        throw "Failed to find \"END Ephemeris\"";
+
+    return ephem;
 }
 
 #endif
