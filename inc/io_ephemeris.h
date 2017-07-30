@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include "string_extra.h"
+#include "ephemeris.h"
 
 bool writeEphemToAGI(std::string outfile, Ephemeris& ephem) {
     if (ephem.states_.size() == 0) return false;
@@ -21,6 +22,7 @@ bool writeEphemToAGI(std::string outfile, Ephemeris& ephem) {
         case FIXED    : csystem = "FIXED"; break;
         case INERTIAL : csystem = "ICRF";  break;
         case TEME     : csystem = "TEMEOfEpoch";  break;
+        case J2000    : csystem = "J2000"; break;
     }
     fprintf(fp, "CoordinateSystem %s\n", csystem.c_str());
     if (ephem.csystem_ == TEME) {
@@ -73,13 +75,31 @@ Ephemeris readEphemAGI(std::string filename) {
         if (!csystemFound && line.find("CoordinateSystem") != std::string::npos) {
             csystemFound = true;
             std::vector<std::string> tmp = strSplit(line, ' ' );
+            if (tmp.size() != 2) {
+                throw "Invalid \"CoordinateSystem\" line in AGI ephem file";
+            }
+            if (tmp[1] == "FIXED") {
+                ephem.csystem_ = FIXED;
+            } else if (tmp[1] == "ICRF") {
+                ephem.csystem_ = INERTIAL;
+            } else if (tmp[1] == "TEME") {
+                ephem.csystem_ = TEME;
+            } else if (tmp[1] == "J2000") {
+                ephem.csystem_ = J2000;
+            }
         }
         if (!csystemEpochFound && line.find("CoordinateSystemEpoch") != std::string::npos) {
             csystemEpochFound = true;
+            std::vector<std::string> tmp = strSplit(line, ' ');
+            if (tmp.size() != 2) {
+                throw "Invalid \"CoordinateSystemEpoch\" line in AGI ephem file";
+            }
+            ephem.csystemEpoch_ = Timecode::parseAGI(tmp[1]);
         }
 
         if (line.find("EphemerisTimePosVel") != std::string::npos) {
             atEphemLines = true;
+            continue;
         }
 
         if (line.find("END Ephemeris") != std::string::npos) {
@@ -88,7 +108,17 @@ Ephemeris readEphemAGI(std::string filename) {
         }
 
         if (atEphemLines) {
-
+            // XXX Need to account for pos/posvel/posvelacc
+            Vec3 pos, vel;
+            double sec;
+            int vals = sscanf(
+                line.c_str(), "%lf %lf %lf %lf %lf %lf %lf",
+                &sec, &pos.x_, &pos.y_, &pos.z_, &vel.x_, &vel.y_, &vel.z_
+            );
+            if (vals != 7) {
+                throw "Invalid \"EphemerisTimePosVel\" line in AGI ephem file";
+            }
+            StateVec sv(epoch + sec, pos, vel);
         }
     }
 

@@ -98,7 +98,8 @@ class StateVec {
 enum CoordSystem {
     FIXED = 0,
     INERTIAL,
-    TEME
+    TEME,
+    J2000
 };
 
 class Ephemeris {
