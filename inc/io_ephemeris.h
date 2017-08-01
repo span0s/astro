@@ -64,13 +64,18 @@ Ephemeris readEphemAGI(std::string filename) {
     // Parse line by line
     std::string line;
     while (std::getline(infile, line)) {
+        // Skip empty lines
+        if (line.find_first_not_of(' ') == std::string::npos) {
+            continue;
+        }
+        
         if (!epochFound && line.find("ScenarioEpoch") != std::string::npos) {
             epochFound = true;
             std::vector<std::string> tmp = strSplit(line, ' ');
-            if (tmp.size() != 2) {
+            if (tmp.size() != 5) {
                 throw "Invalid \"ScenarioEpoch\" line in AGI ephem file";
             }
-            epoch = Timecode::parseAGI(tmp[1]);
+            epoch = Timecode::parseAGI(tmp[1] + " " + tmp[2] + " " + tmp[3] + " " + tmp[4]);
         }
         if (!csystemFound && line.find("CoordinateSystem") != std::string::npos) {
             csystemFound = true;
@@ -91,7 +96,7 @@ Ephemeris readEphemAGI(std::string filename) {
         if (!csystemEpochFound && line.find("CoordinateSystemEpoch") != std::string::npos) {
             csystemEpochFound = true;
             std::vector<std::string> tmp = strSplit(line, ' ');
-            if (tmp.size() != 2) {
+            if (tmp.size() != 5) {
                 throw "Invalid \"CoordinateSystemEpoch\" line in AGI ephem file";
             }
             ephem.csystemEpoch_ = Timecode::parseAGI(tmp[1]);
@@ -116,9 +121,10 @@ Ephemeris readEphemAGI(std::string filename) {
                 &sec, &pos.x_, &pos.y_, &pos.z_, &vel.x_, &vel.y_, &vel.z_
             );
             if (vals != 7) {
-                throw "Invalid \"EphemerisTimePosVel\" line in AGI ephem file";
+                throw ("Invalid \"EphemerisTimePosVel\" line in AGI ephem file: " + line).c_str();
             }
             StateVec sv(epoch + sec, pos, vel);
+            ephem.states_.push_back(sv);
         }
     }
 
