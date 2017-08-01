@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <iomanip>
 
 class Vec3 {
     public:
@@ -43,7 +44,7 @@ class Vec3 {
 
         std::string getStr() {
             std::ostringstream strs;
-            strs << "[" << x_ << ", " << y_ << ", " << z_ << "]";
+            strs << std::setprecision(16) << "[" << x_ << ", " << y_ << ", " << z_ << "]";
             return strs.str();
         }
 
