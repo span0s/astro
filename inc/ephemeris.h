@@ -46,8 +46,8 @@ class StateVec {
 
         Mat3 ricMat() {
             Vec3 rHat = pos_.norm();
-            Vec3 hHat = pos_.cross(vel_).norm();
-            Vec3 aHat = hHat.cross(rHat);
+            Vec3 hHat = (pos_.cross(vel_)).norm();
+            Vec3 aHat = (hHat.cross(rHat)).norm();
 
             return Mat3(
                 rHat.x_, rHat.y_, rHat.z_,
@@ -62,6 +62,7 @@ class StateVec {
             Mat3 mat = ricMat();
             Vec3 r_ric = mat*(other.pos_ - pos_);
             Vec3 v_ric = mat*(other.vel_ - vel_);
+
             return StateVec(tc_, r_ric, v_ric);
         }
 
