@@ -66,7 +66,7 @@ class Timecode {
         static Timecode parseAGI(std::string str) {
             std::vector<std::string> tmp = strSplit(str, ' ');
             if (tmp.size() != 4) 
-                throw "Invalid AGI time format";
+                throw ("Invalid AGI time format: " + str).c_str();
 
             int day = atoi(tmp[0].c_str());
             int year = atoi(tmp[2].c_str());
@@ -82,7 +82,7 @@ class Timecode {
 
             std::vector<std::string> time = strSplit(tmp[3], ':');
             if (time.size() != 3)
-                throw "Invalid AGI time string format";
+                throw ("Invalid AGI time string format: " + tmp[3]).c_str();
 
             int hour = atoi(time[0].c_str());
             int minute = atoi(time[1].c_str());
