@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-#include "sgp4.h"
+#include "ephem_gen.h"
 #include "io_ephemeris.h"
 
 int main(int argc, char* args[]) {

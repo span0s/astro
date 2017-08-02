@@ -2,7 +2,7 @@
 #include <vector>
 using namespace std;
 
-#include "sgp4.h"
+#include "ephem_gen.h"
 
 int main(int argc, char *argv[]) {
 
