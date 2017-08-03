@@ -6,7 +6,6 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
     try {
-
         cmdline args(argc, argv,
             "Computes the RIC difference between two ephemeris files\n"
 
