@@ -9,8 +9,6 @@ TEST_LIST = $(patsubst test%,bin%,$(TEST_PROGS))
 #$(info TEST_PROGS is $(TEST_PROGS))
 #$(info TEST_LIST is $(TEST_LIST))
 
-tests: $(TEST_LIST)
-
 SRC_SRCS = $(wildcard src/*.cc)
 SRC_PROGS = $(patsubst %.cc,%,$(SRC_SRCS))
 SRC_LIST = $(patsubst src%,bin%,$(SRC_PROGS))
@@ -19,6 +17,7 @@ SRC_LIST = $(patsubst src%,bin%,$(SRC_PROGS))
 #$(info SRC_PROGS is $(SRC_PROGS))
 #$(info SRC_LIST is $(SRC_LIST))
 
+all: srcs tests
 tests: $(TEST_LIST)
 srcs: $(SRC_LIST)
 

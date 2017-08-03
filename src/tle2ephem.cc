@@ -6,7 +6,7 @@ using namespace std;
 #include "ephem_gen.h"
 #include "io_ephemeris.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
     try {
         cmdline args(argc, argv,
             "Generates an ephemeris file from a TLE\n"
